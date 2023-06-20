@@ -5,7 +5,8 @@ from torch.optim import AdamW
 from argparse import ArgumentParser
 from read import read_config
 from accelerate import Accelerator
-from accelerate.utils import DummyScheduler, DummyOptim, set_seed
+from accelerate.utils.deepspeed import DummyScheduler, DummyOptim #Amend correct path for these modules.
+from accelerate.utils.random import set_seed #Amend correct path for the module.
 from peft import get_peft_model, LoraConfig, TaskType
 from data import load_data
 from torchmetrics import MeanMetric
