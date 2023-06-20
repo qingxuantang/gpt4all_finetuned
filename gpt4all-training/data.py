@@ -13,10 +13,11 @@ def tokenize_inputs(config, tokenizer, examples):
     # hacky backward compatible
     different_eos = tokenizer.eos_token != "</s>"
     out = {"labels": [], "input_ids": []}
-    for prompt, response in zip(examples["prompt"], examples["response"]):
+    #test: Replace column name "response" with "completion".
+    for prompt, completion in zip(examples["prompt"], examples["completion"]):
         if different_eos:
-            if response.count("</s> \n") > 0:
-                response = response.replace("</s> \n", f"{tokenizer.eos_token} \n") 
+            if completion.count("</s> \n") > 0:
+                completion = completion.replace("</s> \n", f"{tokenizer.eos_token} \n") 
 
         prompt_len = len(tokenizer(prompt + "\n", return_tensors="pt")["input_ids"][0])
 
@@ -33,7 +34,7 @@ def tokenize_inputs(config, tokenizer, examples):
 
         assert prompt_len <= max_length // 2, f"prompt length {prompt_len} exceeds max length {max_length}"
 
-        input_tokens = tokenizer(prompt + "\n" + response + tokenizer.eos_token,
+        input_tokens = tokenizer(prompt + "\n" + completion + tokenizer.eos_token,
                                  truncation=True, max_length=max_length, return_tensors="pt")["input_ids"].squeeze()
 
         labels = input_tokens.clone()
@@ -46,7 +47,7 @@ def tokenize_inputs(config, tokenizer, examples):
         
         if (labels == -100).sum() == len(labels) - 1:
             print(prompt)
-            print(response)
+            print(completion)
             raise
 
         input_tokens = tokenizer.pad({"input_ids": input_tokens}, padding="max_length", max_length=max_length)["input_ids"]
@@ -74,7 +75,9 @@ def load_data(config, tokenizer):
     else:
         dataset = load_dataset(dataset_path, split="train")
 
-    dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
+    #dataset = dataset.train_test_split(test_size=.05, seed=config["seed"])
+    #test
+    dataset = dataset.train_test_split(test_size=0.001, seed=config["seed"])
 
     train_dataset, val_dataset = dataset["train"], dataset["test"]
 
